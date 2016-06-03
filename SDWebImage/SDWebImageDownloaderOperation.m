@@ -22,16 +22,17 @@ static NSString *const kCompletedCallbackKey = @"completed";
 
 typedef NSMutableDictionary<NSString *, id> SDCallbacksDictionary;
 
+
 @interface SDWebImageDownloaderOperation () <NSURLConnectionDataDelegate>
 
-@property (strong, nonatomic) NSMutableArray<SDCallbacksDictionary *> *callbackBlocks;
+@property (strong, nonatomic, nonnull) NSMutableArray<SDCallbacksDictionary *> *callbackBlocks;
 
 @property (assign, nonatomic, getter = isExecuting) BOOL executing;
 @property (assign, nonatomic, getter = isFinished) BOOL finished;
-@property (strong, nonatomic) NSMutableData *imageData;
-@property (strong, nonatomic) NSURLConnection *connection;
-@property (strong, atomic) NSThread *thread;
-@property (SDDispatchQueueSetterSementics, nonatomic) dispatch_queue_t barrierQueue;
+@property (strong, nonatomic, nullable) NSMutableData *imageData;
+@property (strong, nonatomic, nullable) NSURLConnection *connection;
+@property (strong, atomic, nullable) NSThread *thread;
+@property (SDDispatchQueueSetterSementics, nonatomic, nullable) dispatch_queue_t barrierQueue;
 
 #if TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_4_0
 @property (assign, nonatomic) UIBackgroundTaskIdentifier backgroundTaskId;
@@ -48,14 +49,14 @@ typedef NSMutableDictionary<NSString *, id> SDCallbacksDictionary;
 @synthesize executing = _executing;
 @synthesize finished = _finished;
 
-- (instancetype)init {
+- (nonnull instancetype)init {
     if (self = [self initWithRequest:nil options:0]) {
     }
     return self;
 }
 
-- (instancetype)initWithRequest:(NSURLRequest *)request
-                        options:(SDWebImageDownloaderOptions)options {
+- (nonnull instancetype)initWithRequest:(NSURLRequest *)request
+                                options:(SDWebImageDownloaderOptions)options {
     if ((self = [super init])) {
         _request = request;
         _shouldDecompressImages = YES;
@@ -75,8 +76,8 @@ typedef NSMutableDictionary<NSString *, id> SDCallbacksDictionary;
     SDDispatchQueueRelease(_barrierQueue);
 }
 
-- (id)addHandlersForProgress:(SDWebImageDownloaderProgressBlock)progressBlock
-                   completed:(SDWebImageDownloaderCompletedBlock)completedBlock {
+- (nullable id)addHandlersForProgress:(nullable SDWebImageDownloaderProgressBlock)progressBlock
+                            completed:(nullable SDWebImageDownloaderCompletedBlock)completedBlock {
     SDCallbacksDictionary *callbacks = [NSMutableDictionary new];
     if (progressBlock) callbacks[kProgressCallbackKey] = [progressBlock copy];
     if (completedBlock) callbacks[kCompletedCallbackKey] = [completedBlock copy];
@@ -86,7 +87,7 @@ typedef NSMutableDictionary<NSString *, id> SDCallbacksDictionary;
     return callbacks;
 }
 
-- (NSArray<id> *)callbacksForKey:(NSString *)key {
+- (nullable NSArray<id> *)callbacksForKey:(NSString *)key {
     __block NSMutableArray<id> *callbacks = nil;
     dispatch_sync(self.barrierQueue, ^{
         // We need to remove [NSNull null] because there might not always be a progress block for each callback
@@ -96,7 +97,7 @@ typedef NSMutableDictionary<NSString *, id> SDCallbacksDictionary;
     return callbacks;
 }
 
-- (BOOL)cancel:(id)token {
+- (BOOL)cancel:(nullable id)token {
     __block BOOL shouldCancel = NO;
     dispatch_barrier_sync(self.barrierQueue, ^{
         [self.callbackBlocks removeObjectIdenticalTo:token];
@@ -401,7 +402,7 @@ typedef NSMutableDictionary<NSString *, id> SDCallbacksDictionary;
     }
 }
 
-- (UIImage *)scaledImageForKey:(NSString *)key image:(UIImage *)image {
+- (nullable UIImage *)scaledImageForKey:(nullable NSString *)key image:(nullable UIImage *)image {
     return SDScaledImageForKey(key, image);
 }
 
